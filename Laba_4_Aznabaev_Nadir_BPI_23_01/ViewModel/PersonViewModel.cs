@@ -24,9 +24,11 @@ namespace Laba_4_Aznabaev_Nadir_BPI_23_01.ViewModel
         string _jsonPersons = String.Empty;
         public string Error { get; set; }
         public string Message { get; set; }
+
         public ObservableCollection<Person> LoadPerson()
         {
-            _jsonPersons = File.ReadAllText(path); if (_jsonPersons != null)
+            _jsonPersons = File.ReadAllText(path);
+            if (_jsonPersons != null)
             {
                 ListPerson = JsonConvert.DeserializeObject<ObservableCollection<Person>>(_jsonPersons);
                 return ListPerson;
@@ -39,7 +41,8 @@ namespace Laba_4_Aznabaev_Nadir_BPI_23_01.ViewModel
 
         private void SaveChanges(ObservableCollection<Person> listPersons)
         {
-            var jsonPerson = JsonConvert.SerializeObject(listPersons); try
+            var jsonPerson = JsonConvert.SerializeObject(listPersons);
+            try
             {
                 using (StreamWriter writer = File.CreateText(path))
                 {
@@ -80,6 +83,7 @@ namespace Laba_4_Aznabaev_Nadir_BPI_23_01.ViewModel
         public ObservableCollection<PersonDpo> ListPersonDpo { get; set; } = new ObservableCollection<PersonDpo>();
         public PersonViewModel()
         {
+
             ListPerson = new ObservableCollection<Person>();
             ListPersonDpo = new ObservableCollection<PersonDpo>();
             ListPerson = LoadPerson();
@@ -90,7 +94,7 @@ namespace Laba_4_Aznabaev_Nadir_BPI_23_01.ViewModel
         {
             foreach (var person in ListPerson)
             {
-                PersonDpo p = new PersonDpo(); 
+                PersonDpo p = new PersonDpo();
                 p = p.CopyFromPerson(person);
                 ListPersonDpo.Add(p);
             }
@@ -126,7 +130,7 @@ namespace Laba_4_Aznabaev_Nadir_BPI_23_01.ViewModel
                         PersonDpo per = new PersonDpo
                         {
                             Id = maxIdPerson,
-                            Birthday = DateTime.Now.ToString(),
+                            Birthday = DateTime.Now.ToString("dd.MM.yyyy"),
                         };
                         wnPerson.DataContext = per;
 
@@ -154,7 +158,7 @@ namespace Laba_4_Aznabaev_Nadir_BPI_23_01.ViewModel
                     }
                 }, (obj) => true));
             }
-            
+
         }
         private RelayCommand editPerson;
         public RelayCommand EditPerson
@@ -203,11 +207,11 @@ namespace Laba_4_Aznabaev_Nadir_BPI_23_01.ViewModel
                             + e.Message;
                         }
                     }
-                
+
                 }, (obj) => SelectedPersonDpo != null && ListPersonDpo.Count > 0));
             }
         }
-        private RelayCommand deletePerson; 
+        private RelayCommand deletePerson;
         public RelayCommand DeletePerson
         {
             get
@@ -215,25 +219,30 @@ namespace Laba_4_Aznabaev_Nadir_BPI_23_01.ViewModel
                 return deletePerson ??
                 (deletePerson = new RelayCommand(obj =>
                 {
-                    PersonDpo person = SelectedPersonDpo;
-                    MessageBoxResult result = MessageBox.Show("Удалить данные по сотруднику: \n" + person.LastName + " " + person.FirstName,
-    "Предупреждение", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+
+                    PersonDpo personDpo = SelectedPersonDpo;
+                    MessageBoxResult result = MessageBox.Show("Удалить данные по сотруднику: \n" + personDpo.LastName + " " + personDpo.FirstName,
+                        "Предупреждение", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+
                     if (result == MessageBoxResult.OK)
                     {
 
+                        Person personToRemove = ListPerson.FirstOrDefault(p => p.Id == personDpo.Id);
 
-                        ListPersonDpo.Remove(person);
-                        Person per = new Person();
-                        per = per.CopyFromPersonDPO(person);
-                        ListPerson.Remove(per);
-                        SaveChanges(ListPerson);
+                        if (personToRemove != null)
+                        {
+
+                            ListPersonDpo.Remove(personDpo);
+                            ListPerson.Remove(personToRemove);
+                            SaveChanges(ListPerson);
+                            SelectedPersonDpo = null;
+                        }
                     }
-
                 }, (obj) => SelectedPersonDpo != null && ListPersonDpo.Count > 0));
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged; [NotifyPropertyChangedInvocator]
+        public event PropertyChangedEventHandler PropertyChanged;[NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
